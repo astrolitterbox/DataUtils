@@ -39,6 +39,7 @@ def find_in_atlas(arg, ra, dec):
 	#print '''
     ret = np.empty((len(ra), 3))
     for i in range(0, len(ra)):
+      
       decs = np.where(np.round(atlasData.field('DEC'), 3) == round(dec[i], 3))
       ras = np.where(np.round(atlasData.field('RA'), 3) == round(ra[i], 3))
       #print round(ras, 3), round(decs, 3)
@@ -47,10 +48,15 @@ def find_in_atlas(arg, ra, dec):
       a_multiset = collections.Counter(list(ras[0]))
       b_multiset = collections.Counter(list(decs[0]))
       overlap = list((a_multiset & b_multiset).elements())
+      print 'o', overlap
       if overlap != []:
-	ret[i] =  atlasData.field(arg)[overlap]
+	ret[i][0] =  atlasData.field('ra')[overlap]
+	ret[i][1] = atlasData.field('dec')[overlap]      
+	ret[i][2] =  atlasData.field(arg)[overlap]
       else:
-	ret[i] = 0
+	ret[i][0] =  ra[i]
+	ret[i][1] = dec[i]
+	ret[i][2] = 0
       print 'sersic index ', ret[i]
     
     atlas.close()	
