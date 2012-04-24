@@ -53,6 +53,7 @@ class dbUtils:
 	  placeHolderString = dbUtils.createPlaceHolderString(dbUtils.getValueCount(csvReader))
 	  #print 'insert into ' + dbName + schema + placeHolderString, row
 	  for row in csvReader:
+	     
 	     if row[0].startswith('#'):
 		continue
 		print 'comment!'
@@ -76,7 +77,7 @@ class dbUtils:
 	    print data[i, :], 'ith', i
 	    #c.execute('insert into ' + dbName + placeHolderString, t)
 	  conn.commit()
-
+	
 	@staticmethod
 	def getFromDB(columns, table, view, *whereClause): 
 	  conn = sqlite3.connect(table)
@@ -85,20 +86,63 @@ class dbUtils:
 	  c.execute('select ' + columns + ' from ' + view + ''.join(whereClause))
 	  conn.commit()
 	  return c.fetchall()
+	'''
+	@staticmethod
+	def selectWithJoin(dbname, viewName, table1, table2, columns1, key,  *where):
+	  conn = sqlite3.connect(table1, table2)
+	  c = conn.cursor()
+	  print 'create view '+dbname+'.'+viewName+' AS  select ' + table1 +'.'+key1+','+columns1+' from '+table1+' LEFT JOIN '+table2+' USING '+ key
+	  conn.commit()
+	'''
+	
+	@staticmethod
+	def createViewbyIds(table, view, idColumn, columns, ids):
+	  conn = sqlite3.connect(table)
+	  c = conn.cursor()
+	  dbUtils.deleteOldTable(c, view)
+	  c.execute('create view ' + view + ' as select '+columns+' from '+table+' where '+idColumn+' in (%s)' % (", ".join(ids)), ())  
+	  conn.commit()
+	   
+	@staticmethod
+	def addColumn(table, column):
+	  conn = sqlite3.connect(table)
+	  c = conn.cursor()
+	  c.execute('alter table '+ table+' add column '+column)
+	  conn.commit()
 
+	@staticmethod
+	def updateColumn(table1, column1, table2, column2, id1, id2): #table1, column1 -- destination, table2, col2 -- source 
+	  conn = sqlite3.connect(table1)
+	  c = conn.cursor()
+	  c.execute('attach '+table2+' as '+table2)
+	  #morphId = dbUtils.getFromDB('califaid', 'morphData', 'morphData')
+	  #c.execute('select califa_id from mothersample, morphData where morphData.califaid = mothersample.CALIFA_id')
+	  #c.execute('select '+column2+' from '+ table1+', '+table2+' where '+table1+'.'+id1+' = '+table2+'.'+id2)
+	  print 'select '+column2+' from '+ table2+', '+table1+' where '+table1+'.'+id1+' = '+table2+'.'+id2
+	  #c.execute('update '+ table1+' set '+column1+' = (select '+column2+' from '+ table2+', '+table1+' where '+table1+'.'+id1+' = '+table2+'.'+id2+')')
+	  #c.execute('select '+column2+' from '+ table2+', '+table1+' where '+table1+'.'+id1+' = '+table2+'.'+id2)
+	  for i in range(0, 938):
+	    #c.execute('insert into ' + dbName + placeHolderString, data[i, :])
+	    print 'ith', i
+	    #var = c.execute('select '+column2+' from '+ table2+', '+table1+' where '+table1+'.'+id1+' = '+table2+'.'+id2)
+	    c.execute('select '+column2+' from '+ table2+', '+table1+' where '+table1+'.'+id1+' = '+str(i))
+	    c.fetchall()
+	    c.execute('update '+ table1+' set '+column1+' =  '+var)
 
-
-	#np.genfromtxt("data/morph.txt", delimiter=',', missing_values='0', comments="#", usecols=(0, 7),  dtype=[('no.', '<f8'), ('galaxyType', '|S5')])
+	  conn.commit()
+	  #return c.fetchall()
 	  
-	  
+	@staticmethod
 	def createView(table, view, columns, *whereClause):
 	  conn = sqlite3.connect(table)
 	  c = conn.cursor()
-	  deleteOldTable(c, view)
-	  print 'create view ' + view + ' as select  '+ ''.join(columns) + ' from ' + table + ' where ' + ''.join(whereClause[1])
-	  c.execute('create view ' + view + ' as select  '+ ''.join(columns) + ' from ' + table + ' where ' + ''.join(whereClause[1]))
+	  dbUtils.deleteOldTable(c, view)
+	  sql = 'create view ' + view + ' as (select '+ ''.join(columns) + ' from ' + table + ' where ' + ''.join(whereClause[0])+')'			
+	  print sql 
+	  c.execute(sql)
 	  conn.commit()
-
+	  
+	@staticmethod
 	def count(table, view, *args):
 	  conn = sqlite3.connect(table)
 	  c = conn.cursor()
@@ -106,4 +150,4 @@ class dbUtils:
 	  c.execute('select count (*) from ' + view + ''.join(args))
 	  conn.commit()
 	  return c.fetchall()
-  
+	

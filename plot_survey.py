@@ -17,11 +17,12 @@ class PlotTitles:
         self.ylabel = ylabel
 
 
+
 class GraphData:
     def __init__(self, data, colour, legend):
         self.data = data
         self.colour = colour
-        self.legend = legend
+        self.legends = legend
 
 class Plots:
     imgDir = './img/'        
@@ -39,21 +40,21 @@ class Plots:
       prop = matplotlib.font_manager.FontProperties(size=8)     
       for gd in graphDataList:
           p1 = plt.hist((gd.data), color=gd.colour, bins = bins, histtype='barstacked', alpha=0.6)    
-          print gd.legend            
-          #plt.legend([p1], list(gd.legend), loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
+          print gd.legend
+          plt.legend(gd.legend, loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
       plt.title(plotTitles.title)
       plt.xlabel = plotTitles.xlabel
       plt.xscale('log')
       plt.ylabel = plotTitles.ylabel
       plt.savefig(self.imgDir+filename)
 
-    def plotHist(self, graphDataList, filename, plotTitles, bins, barstacked=False, *args):
+    def plotHist(self, graphDataList, filename, plotTitles, bins, *args):
       s = plt.figure()
       ax = s.add_subplot(111)
       try:
         args[0]
       except IndexError:
-          print 'blah'
+          print 'no axis constraints'
       else:  
           v = list(args[0])
           ax.axis(v)
@@ -61,9 +62,10 @@ class Plots:
 #	p1 = plt.hist((gd.data), color=gd.colour, bins = bins, histtype='barstacked', normed=True, alpha=0.6)    
       prop = matplotlib.font_manager.FontProperties(size=8)     
       for gd in graphDataList:
-          p1 = plt.hist((gd.data), color=gd.colour, bins = bins, normed=True, alpha=0.6)    
-          print gd.legend            
-          #plt.legend([p1], list(gd.legend), loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
+	  
+          p1 = plt.hist((gd.data), color=gd.colour, bins = bins, normed=True, histtype='step', alpha=0.75, linewidth=3)    
+          print gd.legends            
+          plt.legend(gd.legends, loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
       plt.title(plotTitles.title)
       plt.xlabel = plotTitles.xlabel
       plt.ylabel = plotTitles.ylabel
@@ -75,14 +77,14 @@ class Plots:
       try:
         args[0]
       except IndexError:
-          print 'blah'
+          print 'no axis constraints'
       else:  
           v = list(args[0])
           ax.axis(v)
       prop = matplotlib.font_manager.FontProperties(size=8)     
       for gd in graphDataList:
-          p1 = ax.plot(gd.data[0], gd.data[1], ',', markersize=1, color=gd.colour, mec=gd.colour, alpha = 0.9) 
-          plt.legend([p1[0]], gd.legend,  loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
+          p1 = ax.plot(gd.data[0], gd.data[1], '.', markersize=6, color=gd.colour, mec=gd.colour, alpha = 0.9) 
+          #plt.legend([p1[0]], gd.legend,  loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
       plt.title(plotTitles.title)
       plt.xlabel = plotTitles.xlabel
       plt.ylabel = plotTitles.ylabel
