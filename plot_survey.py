@@ -23,9 +23,10 @@ class GraphData:
         self.data = data
         self.colour = colour
         self.legends = legend
+        
 
 class Plots:
-    imgDir = './img/'        
+    imgDir = './img3/'        
     def plotLogHist(self, graphDataList, filename, plotTitles, bins, *args):
       bins=10**np.arange(*bins)     
       s = plt.figure()
@@ -41,7 +42,7 @@ class Plots:
       for gd in graphDataList:
           p1 = plt.hist((gd.data), color=gd.colour, bins = bins, histtype='barstacked', alpha=0.6)    
           print gd.legend
-          plt.legend(gd.legend, loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
+          plt.legend(gd.legend, loc=gd.loc, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
       plt.title(plotTitles.title)
       plt.xlabel = plotTitles.xlabel
       plt.xscale('log')
@@ -60,15 +61,17 @@ class Plots:
           ax.axis(v)
 #      if barstacked == True:
 #	p1 = plt.hist((gd.data), color=gd.colour, bins = bins, histtype='barstacked', normed=True, alpha=0.6)    
-      prop = matplotlib.font_manager.FontProperties(size=8)     
+      prop = matplotlib.font_manager.FontProperties(size=8)  
+      legendList = []
       for gd in graphDataList:
-	  
+	  legendList.append(gd.legends)	  
           p1 = plt.hist((gd.data), color=gd.colour, bins = bins, normed=True, histtype='step', alpha=0.75, linewidth=3)    
-          print gd.legends            
-          plt.legend(gd.legends, loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
-      plt.title(plotTitles.title)
-      plt.xlabel = plotTitles.xlabel
-      plt.ylabel = plotTitles.ylabel
+          print 'plotted'            
+      plt.legend(legendList, loc=0, markerscale=1, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
+          
+      plt.title(plotTitles.title)      	
+      plt.xlabel(plotTitles.xlabel)
+      plt.ylabel(plotTitles.ylabel)
       plt.savefig(self.imgDir+filename)
     
     def plotScatter(self, graphDataList, filename, plotTitles, *args):
@@ -81,11 +84,15 @@ class Plots:
       else:  
           v = list(args[0])
           ax.axis(v)
-      prop = matplotlib.font_manager.FontProperties(size=8)     
+      prop = matplotlib.font_manager.FontProperties(size=8)
+      legendList = []
       for gd in graphDataList:
-          p1 = ax.plot(gd.data[0], gd.data[1], '.', markersize=6, color=gd.colour, mec=gd.colour, alpha = 0.9) 
-          #plt.legend([p1[0]], gd.legend,  loc=0, markerscale=10, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
+	  legendList.append(gd.legends)
+          p1 = ax.plot(gd.data[0], gd.data[1], '.', markersize=15, color=gd.colour, mec=gd.colour, alpha = 0.9) 
+      
+      plt.legend(legendList,  loc=0, markerscale=1, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
+	  
       plt.title(plotTitles.title)
-      plt.xlabel = plotTitles.xlabel
-      plt.ylabel = plotTitles.ylabel
+      plt.xlabel(plotTitles.xlabel)
+      plt.ylabel(plotTitles.ylabel)
       plt.savefig(self.imgDir+filename)
