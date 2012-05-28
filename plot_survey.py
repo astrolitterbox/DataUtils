@@ -19,10 +19,12 @@ class PlotTitles:
 
 
 class GraphData:
-    def __init__(self, data, colour, legend):
+    def __init__(self, data, colour, histtype, norm, legend):
         self.data = data
         self.colour = colour
         self.legends = legend
+        self.histtype = histtype
+        self.norm = norm
         
 
 class Plots:
@@ -64,10 +66,11 @@ class Plots:
       prop = matplotlib.font_manager.FontProperties(size=8)  
       legendList = []
       for gd in graphDataList:
-	  legendList.append(gd.legends)	  
-          p1 = plt.hist((gd.data), color=gd.colour, bins = bins, normed=True, histtype='step', alpha=0.75, linewidth=3)    
+	  legendList.append(gd.legends)
+	  print legendList	  
+          p1 = plt.hist((gd.data), color=gd.colour, bins = bins, normed=gd.norm, histtype=gd.histtype, alpha=0.75, linewidth=3)    
           print 'plotted'            
-      plt.legend(legendList, loc=0, markerscale=1, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
+      plt.legend(legendList, loc=0, markerscale=1, fancybox=False, labelspacing = 0.2, prop=prop, shadow=True)
           
       plt.title(plotTitles.title)      	
       plt.xlabel(plotTitles.xlabel)

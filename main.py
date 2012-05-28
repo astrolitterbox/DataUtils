@@ -9,11 +9,11 @@ from scipy.stats import ks_2samp as ks_2samp
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
 import pyfits as pyfits
-import sami_db
+#import sami_db
 import db as db
 import plot_survey as plot
-from sami_new import getDataArray as fullDataArray
-from sami_new import plotScatter as OldSchoolPlot
+#from sami_new import getDataArray as fullDataArray
+#from sami_new import plotScatter as OldSchoolPlot
 import matplotlib.font_manager 
 import csv
 import readAtlas
@@ -31,11 +31,23 @@ tH = (3.08568025*1e19/H0)/(3600 * 365 * 24*10e9) #Hubble time in Gyr
 skyArea = 41252.9612494193 #degrees      
 dH = c/H0 #in Mpc
 imgDir = 'img/'
-dbFile = 'califa'
+dbFile = 'CALIFA.sqlite'
 dataFile = 'data/Califa.csv'
 morphDataFile = 'morph.dat'
 observedList = 'list_observed.txt'
 db_dataFile = 'db_data.txt'
+
+#colour settings
+
+ASColour = '#666666'
+RASColour = '#ED9121'
+RDASColour = '#EE0000'
+DASColour = '#99FF33'
+DRASColour = '#006633'
+CALIFAColour = '#1B3F8B'
+
+
+#utilities
 def E_z(z): #time derivative of log(a(t)), used for integration
 	return 1/(np.sqrt((Wm*(1+z)**3 + Wk*(1+z)**2 + Wl)))
 
@@ -138,106 +150,49 @@ def list_to_int(l):
 
 
 def main():
-  #print sami_db.count('main', 'blueSample')
-  
-#	sami_db.createDB('califa', 'data/Califa.csv', '(objid text, ra float, dec float, b float, l float, petroMag_u float, petroMag_g float, petroMag_r float, petroMag_i float, petroMag_z float, petroMagErr_u float, petroMagErr_g float, petroMagErr_r float, petroMagErr_i float, petroMagErr_z float, extinction_u float, extinction_g float, extinction_r float, extinction_i float, extinction_z float, isoA_r float, isoB_r float, rho float, lnLExp_r float, expRad_r float, lnLDeV_r float, deVRad_r float)') 
-  #print sami_db.count('morphData', 'morphData')
-#  print Morph
-
-	#zData = np.genfromtxt('data/CALIFA_z.txt')#, dtype = [('z', float)], delimiter=',', names=True, comments='#')
-	#print zData.shape
-	#data = np.genfromtxt(dataFile,  delimiter=',', comments='#', dtype = [('objID', '|S24'),('ra', float), ('dec', float), ('b', float), ('l', float), ('petroMag_u', float), ('petroMag_g', float), ('petroMag_r', float), ('petroMag_i', float), ('petroMag_z', float), ('petroMagErr_u', float),('petroMagErr_g', float), ('petroMagErr_r', float), ('petroMagErr_i', float), ('petroMagErr_z', float), ('extinction_u', float), ('extinction_g', float), ('extinction_r', float), ('extinction_i', float), ('extinction_z', float), ('isoA_r', float), ('isoB_r', float), ('rho', float), ('lnLExp_r', float), ('expRad_r', float), ('lnLDeV_r', float), ('deVRad_r', float)], names=True, missing_values='0')
-	#sami_db.createSampleTable('main', getDataArray(data, zData))
-	#print 'califa sample data is ready'
-	#GrandData = np.genfromtxt("data/califaGrand.csv",  delimiter=',', comments='#',dtype = [('objID', '|S24'),('ra', float), ('dec', float), ('b', float), ('l', float), ('petroMag_u', float), ('petroMag_g', float), ('petroMag_r', float), ('petroMag_i', float), ('petroMag_z', float), ('petroMagErr_u', float),('petroMagErr_g', float), ('petroMagErr_r', float), ('petroMagErr_i', float), ('petroMagErr_z', float), ('extinction_u', float), ('extinction_g', float), ('extinction_r', float), ('extinction_i', float), ('extinction_z', float), ('isoA_r', float), ('isoB_r', float), ('z', float), ('rho', float), ('lnLExp_r', float), ('expRad_r', float), ('lnLDeV_r', float), ('deVRad_r', float)], names=True, missing_values='0')
-	#sami_db.createSampleTable('grandmother', fullDataArray(GrandData))
-
-	#np.savetxt('maindump.txt', getDataArray(data))
-  #sami_db.createView('grandmother', 'grandmotherFL', 'objid, ra, dec, petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z, petroMagErr_u, petroMagErr_g, petroMagErr_r, petroMagErr_i, petroMagErr_z, extinction_u, extinction_g, extinction_r,  extinction_i, extinction_z, isoA_r, isoB_r, z, absmag, gr_colour, sb, reff, size, stMass', '(z between 0.005 and 0.03) and (petroMag_r < 20)')
-	#print 'gm sample is ready'
-  #sami_db.createView('main', 'redSample', 'objid, ra, dec, petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z, petroMagErr_u, petroMagErr_g, petroMagErr_r, petroMagErr_i, petroMagErr_z, extinction_u, extinction_g, extinction_r,  extinction_i, extinction_z, isoA_r, isoB_r, z, absmag, gr_colour, sb, reff, size, stMass', '((2 * reff) between 10 and 15) and (z between 0.005 and 0.05)' )
-  #sami_db.createView('main', 'greenSample', 'objid, ra, dec, petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z, petroMagErr_u, petroMagErr_g, petroMagErr_r, petroMagErr_i, petroMagErr_z, extinction_u, extinction_g, extinction_r,  extinction_i, extinction_z, isoA_r, isoB_r, z, absmag, gr_colour, sb, reff, size, stMass', '((2 * reff) between 4 and 10) and (z between 0 and 0.05)')
-  #sami_db.createView('main', 'blueSample', 'objid, ra, dec, petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z, petroMagErr_u, petroMagErr_g, petroMagErr_r, petroMagErr_i, petroMagErr_z, extinction_u, extinction_g, extinction_r,  extinction_i, extinction_z, isoA_r, isoB_r, z, absmag, gr_colour, sb, reff, size, stMass', '(size > 14) and (z between 0.005 and 0.05)')
-  
-  #  print 'create view ' + name + ' as select  '+ ''.join(args[0]) + ' from ' + table + ' where ' + ''.join(args[1])
-  #sami_db.createDB('califa_observed', 'list_observed.txt', '(no text, califa_id text)')
-  #db.dbUtils.createDBFromFile('morphData', morphDataFile, ' (CalifaID text, Hubtype text)')
-
-  #db.dbUtils.createDBFromFile('califa_observed', observedList, ' (No integer, CalifaID text)')
-  #observed_ids = np.genfromtxt("list_observed.txt")[:, 1]
-  
-  #print sami_db.count('morphData', 'morphData')
-  #print Morph
-  #print sami_db.count('califa_observed', 'califa_observed')
-  #sami_db.createDB('califa_photomatch', 'CALIFA_SDSS_photo_match.csv', '(objid text, ra float, dec float, b float, l float, z float, objid text, run int, rerun float, camcol float, field shor petroMag_u float, petroMag_g float, petroMag_r float, petroMag_i float, petroMag_z float, petroMagErr_u float, petroMagErr_g float, petroMagErr_r float, petroMagErr_i float, petroMagErr_z float, extinction_u float, extinction_g float, extinction_r float, extinction_i float, extinction_z float, isoA_r float, isoB_r float, rho float, lnLExp_r float, expRad_r float, lnLDeV_r float, deVRad_r float)') 
-  
-  #schema = '(CALIFA_id float, ra float, dec float, z float, absmag float, stMass float, gr_colour float, objid text, run int, rerun int, camcol int, field int, petroMag_u float, petroMag_g float, petroMag_r float, petroMag_i float, petroMag_z float, petroMagErr_u float, petroMagErr_g float, petroMagErr_r float, petroMagErr_i float, petroMagErr_z float, petroRad_u float, petroRad_g float, petroRad_r float, petroRad_i float, petroRad_z float, petroR50_u float, petroR50_g float, petroR50_r float, petroR50_i float, petroR50_z float,petroR90_u float, petroR90_g float, petroR90_r float, petroR90_i float, petroR90_z float, isoA_r float, isoB_r float, isoPhi_r float, dered_r float)'
-  #db_data = np.genfromtxt(db_dataFile)
-  #db_data[:, 0] = np.round(db_data[:, 0], 0)
-  #print db_data[:, 0]
-  
-  #db.dbUtils.createDBFromArray('mothersample', db_data, schema)
-  '''
-  observed_ids = list()
-  
-  with open(observedList, 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-	observed_ids.append(row[1].lstrip())
- 	
-  #print observed_ids  
-  
-  Morph = db.dbUtils.getFromDB('Hubtype, CalifaID', 'morphData', 'morphData')
-  print len(Morph)
-  MorphArray = np.zeros((len(Morph), 2))
-  SpiralIDS = list()	
-  for i in range(0, len(Morph)):	
-	#print '-'+Morph[i][0].encode()+'-', Morph[i][1]
-  	MorphArray[i][0] = Morph[i][1]
-  	if Morph[i][0].encode() == ' S':
-  	  	SpiralIDS.append(str(i+1))
-  		#print 'aaa'
-  		MorphArray[i][1] = 1
-  	if Morph[i][0].encode() == ' E':
-  		MorphArray[i][1] = 2
-
-  
-  print observed_ids, '\n', SpiralIDS
-  
-  
-  a_multiset = collections.Counter(SpiralIDS)
-  b_multiset = collections.Counter(observed_ids)
-  overlap = list((a_multiset & b_multiset).elements())
-  print '*******************\n', sorted(overlap)
-  
-
-  db.dbUtils.createViewbyIds('mothersample', 'Spirals', 'califa_id', 'califa_id, ra, dec, z, absmag, petroMag_g, petroMag_r, isoA_r, isoB_r, isoPhi_r, Htype', SpiralIDS)
-  '''
-  #db.dbUtils.createViewbyIds('mothersample', 'ObservedSpirals', 'califa_id', 'califa_id, ra, dec, z, absmag, gr_colour, petroMag_r, isoA_r, isoB_r, isoPhi_r', overlap)
 
 
-#  db.dbUtils.createViewbyIds('mothersample.observed', 'observedSpirals', 'califa_id', 'califa_id, ra, dec, z, absmag, gr_colour, petroMag_r, isoA_r, isoB_r, isoPhi_r, Htype', SpiralIDS)
- 
- 
-  	
-  #morphCalifaID = db.dbUtils.getFromDB('CALIFAId', 'morphData', 'morphData')
   
-  #db.dbUtils.addColumn('mothersample', 'Htype')
+  #plotting axis ratio distribution for MS, RDAS and DRAS
+  isoA_r_DRAS = convert(db.dbUtils.getFromDB('isoB_r', 'DAS', 'DRAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'DAS', 'DRAS'))
+  isoA_r_RDAS = convert(db.dbUtils.getFromDB('isoB_r', 'RAS', 'RDAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'RAS', 'RDAS'))
+  isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
+  
+  graph = plot.Plots()
+  isoA_r_AxisRatioData = plot.GraphData((isoA_r_axis_ratio), CALIFAColour, 'step', False, 'Mothersample')  
+  DRAS_AxisRatioData = plot.GraphData((isoA_r_DRAS), DRASColour, 'step', False,  'DRAS iso25_r')  
+  RDAS_AxisRatioData = plot.GraphData((isoA_r_RDAS), RDASColour, 'step', False, 'RDAS iso25_r')
+  graph.plotHist([isoA_r_AxisRatioData, DRAS_AxisRatioData, RDAS_AxisRatioData], 'DRAS_RDAS_mothersample_axis_ratio_distribution', plot.PlotTitles("b/a distributions for the mothersample, DRAS and RDAS", "b/a", "N"), 20)  
 
-  #db.dbUtils.createViewbyIds('mothersample', 'observedSpirals', 'califa_id', 'califa_id, ra, dec, z, absmag, gr_colour, petroMag_r, isoA_r, isoB_r, isoPhi_r, Htype', Morph)
-# db.dbUtils.createViewbyIds('mothersample', 'observed', 'califa_id', 'califa_id, ra, dec, z, absmag, gr_colour, petroMag_r, isoA_r, isoB_r, isoPhi_r, Htype', observed_ids)
   
-  #db.dbUtils.updateColumn('mothersample', 'Htype', 'morphData', 'Hubtype', 'CALIFA_id', 'CalifaID')
+  #plotting the isoA_r/BA_90/growth curve ba spirals distribution
+  graph = plot.Plots()
+  isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
+  growth_curve_axis_ratio = convert(db.dbUtils.getFromDB('ba', 'CALIFA.sqlite', 'nadine'))
   
-  #getFromDB(columns, table, view, *whereClause)
-  #sami_db.createView('mothersample', 'observed', 'objid', 'califa_id in ('++')')
-  #print  db.dbUtils.getFromDB('Htype', 'mothersample', 'mothersample', 'Htype = ''S''')
+  isoA_r_AxisRatioData = plot.GraphData((isoA_r_axis_ratio), 'k', 'step', False, 'SDSS iso25_r')
+  growth_curve_axis_ratioData = plot.GraphData((growth_curve_axis_ratio), 'r', 'step', False, 'Growth curve photometry')
+  BA90 = np.genfromtxt('BA90_filled.txt')[:, 2]
+  print np.where(BA90 <0), BA90[np.where(BA90 <0)]
+  BA90Data = plot.GraphData((BA90[np.where(BA90 >0)]), 'g', 'bar', False, 'BA_90 from NSAtlas')
+	
+  graph.plotHist([isoA_r_AxisRatioData, growth_curve_axis_ratioData, BA90Data], 'growth_curve_and_iso25_r_axis_ratio_distribution', plot.PlotTitles("b/a distributions from SDSS iso25_r, NSAtlas BA_90 and growth curve", "b/a", "N"), 20)
+    
+  exit() 
+
+  #plotting axis ratio distribution for MS, DAS and RAS
+  isoA_r_DAS = convert(db.dbUtils.getFromDB('isoB_r', 'DAS', 'DAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'DAS', 'DAS'))
+  isoA_r_RAS = convert(db.dbUtils.getFromDB('isoB_r', 'RAS', 'RAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'RAS', 'RAS'))
+  isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
   
-  #db.dbUtils.createView('mothersample', 'observedSpirals', 'califa_id, ra, dec, z, absmag, gr_colour, petroMag_r, isoA_r, isoB_r, isoPhi_r, Htype', 'Htype = `S`')
-  #Htype = db.dbUtils.getFromDB('Htype', 'mothersample', 'mothersample')
-  #print Htype
-  
-  #print len(db.dbUtils.getFromDB('califa_id', 'mothersample', 'Spirals'))
+  graph = plot.Plots()
+  isoA_r_AxisRatioData = plot.GraphData((isoA_r_axis_ratio), CALIFAColour, 'step', True, 'Mothersample')  
+  DAS_AxisRatioData = plot.GraphData((isoA_r_DAS), DASColour, 'step', True, 'DAS iso25_r')  
+  RAS_AxisRatioData = plot.GraphData((isoA_r_RAS), RASColour, 'step', True, 'RAS iso25_r')
+  graph.plotHist([isoA_r_AxisRatioData, DAS_AxisRatioData, RAS_AxisRatioData], 'DAS_RAS_mothersample_axis_ratio_distribution', plot.PlotTitles("b/a distributions for the mothersample, DAS and DAS", "b/a", "N"), 20)  
+
+
+
   '''  
   
   sampleAxisRatio = convert(sami_db.getFromDB('isoB_r', 'mothersample', 'mothersample'))/convert(sami_db.getFromDB('isoA_r', 'mothersample', 'mothersample'))
@@ -656,7 +611,7 @@ def main():
   midInclsGRData = plot.GraphData((midInclsGR, midIncMr), 'k', ('0.3 < b/a < 0.7'))
   edgeOnInclsGRData = plot.GraphData((edgeOnInclsGR, edgeOnMr), 'r', ('b/a < 0.3'))
   graph10.plotScatter([faceOnGRData, midInclsGRData, edgeOnInclsGRData], 'CMD_vs_incl', plot.PlotTitles("Magnitude vs. colour", 'g-r, mag', 'M_r, mag'))
-  exit()
+
   '''
   #createFakeInclinations()
   
