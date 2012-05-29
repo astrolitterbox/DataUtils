@@ -150,7 +150,51 @@ def list_to_int(l):
 
 
 def main():
+  #plotting axis ratio distribution for different z with petroMag_r > 20.5
+  Incl = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample', ' where absmag > -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample', ' where absmag > -20.5')) 
+  z = convert(db.dbUtils.getFromDB('z', 'CALIFA.sqlite', 'mothersample', ' where absmag > -20.5'))
+  graph11 = plot.Plots()
+  print z.shape
+  
+  
+  faceOn = np.where(Incl > 0.7)
+  midincl = np.where((Incl > 0.3) & (Incl < 0.7))
+  edgeOn = np.where((Incl < 0.3))
+  
+  print faceOn, midincl, edgeOn
+  
+  faceOnGR = z[faceOn]
+  midInclsGR = z[midincl]
+  edgeOnInclsGR = z[edgeOn]
+  
+  faceOnGRData = plot.GraphData((faceOnGR), 'b', 'step', False, 'b/a > 0.7')
+  midInclsGRData = plot.GraphData((midInclsGR), 'k', 'step', False, '0.3 < b/a < 0.7')
+  edgeOnData = plot.GraphData((edgeOnInclsGR), 'r', 'step', False,'b/a < 0.3')
+  zdata = plot.GraphData((z), 'grey', 'step', False, 'Total number')
+  bins = graph11.plotHist([zdata, faceOnGRData, midInclsGRData, edgeOnData], 'incl_vs_z_faint', plot.PlotTitles("Axis ratio vs. redshift",  'z', 'n'), 10)
 
+  #plotting axis ratio distribution for different z with r < 20.5
+  Incl = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample', ' where absmag < -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample', ' where absmag < -20.5')) 
+  z = convert(db.dbUtils.getFromDB('z', 'CALIFA.sqlite', 'mothersample', ' where absmag < -20.5'))
+  graph11 = plot.Plots()
+  
+  faceOn = np.where(Incl > 0.7)
+  midincl = np.where((Incl > 0.3) & (Incl < 0.7))
+  edgeOn = np.where((Incl < 0.3))
+  
+  
+  faceOnGR = z[faceOn]
+  midInclsGR = z[midincl]
+  edgeOnInclsGR = z[edgeOn]
+  
+  faceOnGRData = plot.GraphData((faceOnGR), 'b', 'step', False, 'b/a > 0.7')
+  midInclsGRData = plot.GraphData((midInclsGR), 'k', 'step', False, '0.3 < b/a < 0.7')
+  edgeOnData = plot.GraphData((edgeOnInclsGR), 'r', 'step', False,'b/a < 0.3')
+  zdata = plot.GraphData((z), 'grey', 'step', False, 'Total number')
+  bins = graph11.plotHist([zdata, faceOnGRData, midInclsGRData, edgeOnData], 'incl_vs_z_bright', plot.PlotTitles("Axis ratio vs. redshift, petroMag_r < 20.5",  'z', 'n'), 10)
+
+
+  exit()
 
   
   #plotting axis ratio distribution for MS, RDAS and DRAS
@@ -164,7 +208,7 @@ def main():
   RDAS_AxisRatioData = plot.GraphData((isoA_r_RDAS), RDASColour, 'step', False, 'RDAS iso25_r')
   graph.plotHist([isoA_r_AxisRatioData, DRAS_AxisRatioData, RDAS_AxisRatioData], 'DRAS_RDAS_mothersample_axis_ratio_distribution', plot.PlotTitles("b/a distributions for the mothersample, DRAS and RDAS", "b/a", "N"), 20)  
 
-  
+ 
   #plotting the isoA_r/BA_90/growth curve ba spirals distribution
   graph = plot.Plots()
   isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
@@ -178,7 +222,7 @@ def main():
 	
   graph.plotHist([isoA_r_AxisRatioData, growth_curve_axis_ratioData, BA90Data], 'growth_curve_and_iso25_r_axis_ratio_distribution', plot.PlotTitles("b/a distributions from SDSS iso25_r, NSAtlas BA_90 and growth curve", "b/a", "N"), 20)
     
-  exit() 
+
 
   #plotting axis ratio distribution for MS, DAS and RAS
   isoA_r_DAS = convert(db.dbUtils.getFromDB('isoB_r', 'DAS', 'DAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'DAS', 'DAS'))
@@ -192,6 +236,11 @@ def main():
   graph.plotHist([isoA_r_AxisRatioData, DAS_AxisRatioData, RAS_AxisRatioData], 'DAS_RAS_mothersample_axis_ratio_distribution', plot.PlotTitles("b/a distributions for the mothersample, DAS and DAS", "b/a", "N"), 20)  
 
 
+
+
+  #graph11.plotScatter([InlsData], 'incl_vs_z', plot.PlotTitles("Inclination vs. redshift",  'z', 'Inclination, deg'))
+
+  exit() 
 
   '''  
   
