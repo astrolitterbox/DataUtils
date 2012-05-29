@@ -7,6 +7,8 @@ import collections
 
 #print atlasData.field('IAUNAME')
 
+
+
 def find_mag(ra, dec):
     r_band = 4
     atlasFile = '/media/46F4A27FF4A2713B_/work/nsa_v0_1_2.fits'
