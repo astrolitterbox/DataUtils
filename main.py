@@ -150,6 +150,115 @@ def list_to_int(l):
 
 
 def main():
+
+  graph = plot.Plots()
+  isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
+  rMag = convert(db.dbUtils.getFromDB('petroMag_r', 'mothersample', 'mothersample'))
+  
+  growth_curve_axis_ratio = convert(db.dbUtils.getFromDB('ba', 'CALIFA.sqlite', 'nadine'))
+  growth_curve_Mag = convert(db.dbUtils.getFromDB('r_mag', 'CALIFA.sqlite', 'nadine'))
+  
+  AxisRatio_RAS = convert(db.dbUtils.getFromDB('isoB_r', 'RAS', 'RAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'RAS', 'RAS'))
+  rmag_RAS = convert(db.dbUtils.getFromDB('petroMag_r', 'RAS', 'RAS'))
+
+  AxisRatio_DAS = convert(db.dbUtils.getFromDB('isoB_r', 'DAS', 'DAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'DAS', 'DAS'))
+  rmag_DAS = convert(db.dbUtils.getFromDB('petroMag_r', 'DAS', 'DAS'))
+  
+  isoA_r_mag_Data = plot.GraphData((rMag, isoA_r_axis_ratio), 'k', 'step', False, 'SDSS iso25_r')
+  growth_curve_axis_ratioData = plot.GraphData((growth_curve_Mag, growth_curve_axis_ratio), 'r', 'step', False, 'Growth curve photometry')
+  RAS_Data = plot.GraphData((rmag_RAS, AxisRatio_RAS), RASColour, 'step', False, 'RAS')
+  DAS_Data = plot.GraphData((rmag_DAS, AxisRatio_DAS), DASColour, 'step', False, 'DAS')
+  graph.plotScatter([RAS_Data, DAS_Data, isoA_r_mag_Data, growth_curve_axis_ratioData], 'growth_curve_and_iso25_app_mag', plot.PlotTitles("Axis ratio vs. m_r from SDSS iso25_r, and growth curve", "m_r", "b/a"))
+
+  exit()
+  #plotting axis ratio distribution for both magnitude cuts
+  observedSpiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'observed'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'observed'))
+  spiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'mothersample'))
+  AxisRatio_DRAS = convert(db.dbUtils.getFromDB('isoB_r', 'DAS', 'DRAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'DAS', 'DRAS'))
+  AxisRatio_RDAS = convert(db.dbUtils.getFromDB('isoB_r', 'RAS', 'RDAS'))/convert(db.dbUtils.getFromDB('isoA_r', 'RAS', 'RDAS'))
+  isoA_r_DRAS = convert(db.dbUtils.getFromDB('isoA_r', 'DAS', 'DRAS'))*0.396
+  isoA_r_RDAS = convert(db.dbUtils.getFromDB('isoA_r', 'RAS', 'RDAS'))*0.396
+  
+  graph5 = plot.Plots()
+  obsIsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'observed'))
+  spiralIsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'mothersample'))
+  
+  obsMagData = plot.GraphData((obsIsoA_r, observedSpiralsIncl), 'k', 'step', False, 'Observed galaxies')
+  spiralMagData = plot.GraphData((spiralIsoA_r, spiralsIncl), CALIFAColour,  'step', False, 'Mothersample')
+  DRASData = plot.GraphData((isoA_r_DRAS, AxisRatio_DRAS), DRASColour, 'step', False, 'DRAS galaxies')
+  RDASData = plot.GraphData((isoA_r_RDAS, AxisRatio_RDAS), RDASColour, 'step', False, 'RDAS galaxies')
+  graph5.plotScatter([ DRASData, RDASData,spiralMagData, obsMagData], 'incl_vs_size_all', plot.PlotTitles("Axis ratio vs. isophotal major axis for MS, DRAS and RDAS", 'isoA_r, arcsec', 'Axis ratio'), (40, 85, 0, 1))
+  
+
+  
+  
+    #plotting axis ratio distribution for bright sample (absmag_r < 20.5)
+  observedSpiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'observed', ' where absmag < -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'observed', ' where absmag < -20.5'))
+  spiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'mothersample', ' where absmag < -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'mothersample', ' where absmag < -20.5'))
+
+  obsIsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'observed', ' where absmag < -20.5'))
+  spiralIsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'mothersample', ' where absmag < -20.5'))
+  
+  graph5 = plot.Plots()
+  
+  obsMagData = plot.GraphData((obsIsoA_r, observedSpiralsIncl), 'r', 'step', False, 'Observed galaxies with M_r < 20.5')
+
+  spiralMagData = plot.GraphData((spiralIsoA_r, spiralsIncl), CALIFAColour,  'step', False, 'Mothersample, M_r < 20.5')
+  graph5.plotScatter([spiralMagData, obsMagData], 'incl_vs_size_bright', plot.PlotTitles("Axis ratio vs. isophotal major axis for galaxies with M_r < 20.5", 'isoA_r, arcsec', 'Axis ratio'), (40, 80, 0, 1))
+  
+  #plotting axis ratio distribution for faint sample (absmag_r > 20.5)
+  observedSpiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'observed', ' where absmag > -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'observed', ' where absmag > -20.5'))
+  spiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'mothersample', ' where absmag > -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'mothersample', ' where absmag > -20.5'))
+
+  graph5 = plot.Plots()
+  obsIsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'observed', ' where absmag > -20.5'))
+  spiralIsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'mothersample', ' where absmag > -20.5'))
+  obsMagData = plot.GraphData((obsIsoA_r, observedSpiralsIncl), 'r', 'step', False, 'Observed galaxies')
+  spiralMagData = plot.GraphData((spiralIsoA_r, spiralsIncl), CALIFAColour,  'step', False, 'Mothersample')
+  graph5.plotScatter([spiralMagData, obsMagData], 'incl_vs_size_faint', plot.PlotTitles("Axis ratio vs. isophotal major axis for galaxies with M_r < 20.5", 'isoA_r, arcsec', 'Axis ratio'), (40, 80, 0, 1))
+  
+
+  
+  #plotting the observed spirals/mothersample spirals distribution, corrected for finite thickness
+  
+  obsSpiralsAxisRatio = np.degrees(np.arccos(convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'ObservedSpirals'))))/np.degrees(np.arccos(convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'ObservedSpirals'))))
+  spiralAxisRatio =  np.degrees(np.arccos(convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'Spirals'))))/np.degrees(np.arccos(convert(sami_db.getFromDB('isoA_r', 'mothersample', 'Spirals'))))
+  
+  #print (spiralAxisRatio**2 - 0.13**2)
+  SpiralsCorrectedIncl = np.sqrt((abs(spiralAxisRatio**2 - 0.15**2)/(1 - 0.15**2)))
+  obsSpiralsCorrectedIncl = np.sqrt((abs(obsSpiralsAxisRatio**2 - 0.15**2)/(1 - 0.15**2)))
+  #fakeInclsData = plot.GraphData((createFakeInclinations()), 'grey', 'random distribution of disks with q = 0.15')
+  #print obsSpiralsCorrectedIncl, SpiralsCorrectedIncl
+  graph2 = plot.Plots()
+  
+  obsSpiralsCorrectedInclData = plot.GraphData((obsSpiralsCorrectedIncl), 'r', 'Observed sample')
+  SpiralsCorrectedInclData = plot.GraphData((SpiralsCorrectedIncl), 'k', 'Mother sample')
+  graph2.plotHist([obsSpiralsCorrectedInclData, SpiralsCorrectedInclData], 'CorrectedInclDistribution', plot.PlotTitles("Inclination distribution, corrected for thickness", "b/a", "Normalised number"), 10)    
+  
+  
+  exit()
+  #plotting axis ratio distribution for faint sample (petroMag_r > 20.5)
+  Incl = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample', ' where absmag > -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample', ' where absmag > -20.5')) 
+  
+  graph11 = plot.Plots()
+
+  AxisRatioData = plot.GraphData((Incl), 'k', 'bar', False,'CALIFA mother sample, M_r > -20.5')
+
+  bins = graph11.plotHist([AxisRatioData], 'axis_ratio_faint', plot.PlotTitles("Axis ratio b/a distribution when petroMag_r > 20.5",  'b/a', 'n'), 20)
+
+
+  #plotting axis ratio distribution for bright sample (petroMag_r < 20.5)
+  Incl = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample', ' where absmag < -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample', ' where absmag < -20.5')) 
+  
+  graph11 = plot.Plots()
+
+  AxisRatioData = plot.GraphData((Incl), 'k', 'bar', False,'CALIFA mother sample, M_r < -20.5')
+
+  bins = graph11.plotHist([AxisRatioData], 'axis_ratio_bright', plot.PlotTitles("Axis ratio b/a distribution when petroMag_r < 20.5",  'b/a', 'n'), 20)
+
+
+
+
   #plotting axis ratio distribution for different z with petroMag_r > 20.5
   Incl = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample', ' where absmag > -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample', ' where absmag > -20.5')) 
   z = convert(db.dbUtils.getFromDB('z', 'CALIFA.sqlite', 'mothersample', ' where absmag > -20.5'))
@@ -171,7 +280,7 @@ def main():
   midInclsGRData = plot.GraphData((midInclsGR), 'k', 'step', False, '0.3 < b/a < 0.7')
   edgeOnData = plot.GraphData((edgeOnInclsGR), 'r', 'step', False,'b/a < 0.3')
   zdata = plot.GraphData((z), 'grey', 'step', False, 'Total number')
-  bins = graph11.plotHist([zdata, faceOnGRData, midInclsGRData, edgeOnData], 'incl_vs_z_faint', plot.PlotTitles("Axis ratio vs. redshift",  'z', 'n'), 10)
+  bins = graph11.plotHist([zdata, faceOnGRData, midInclsGRData, edgeOnData], 'incl_vs_z_faint', plot.PlotTitles("Axis ratio vs. redshift, petroMag_r > 20.5",  'z', 'n'), 10)
 
   #plotting axis ratio distribution for different z with r < 20.5
   Incl = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample', ' where absmag < -20.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample', ' where absmag < -20.5')) 
@@ -194,7 +303,6 @@ def main():
   bins = graph11.plotHist([zdata, faceOnGRData, midInclsGRData, edgeOnData], 'incl_vs_z_bright', plot.PlotTitles("Axis ratio vs. redshift, petroMag_r < 20.5",  'z', 'n'), 10)
 
 
-  exit()
 
   
   #plotting axis ratio distribution for MS, RDAS and DRAS
@@ -233,9 +341,10 @@ def main():
   isoA_r_AxisRatioData = plot.GraphData((isoA_r_axis_ratio), CALIFAColour, 'step', True, 'Mothersample')  
   DAS_AxisRatioData = plot.GraphData((isoA_r_DAS), DASColour, 'step', True, 'DAS iso25_r')  
   RAS_AxisRatioData = plot.GraphData((isoA_r_RAS), RASColour, 'step', True, 'RAS iso25_r')
-  graph.plotHist([isoA_r_AxisRatioData, DAS_AxisRatioData, RAS_AxisRatioData], 'DAS_RAS_mothersample_axis_ratio_distribution', plot.PlotTitles("b/a distributions for the mothersample, DAS and DAS", "b/a", "N"), 20)  
+  graph.plotHist([isoA_r_AxisRatioData, DAS_AxisRatioData, RAS_AxisRatioData], 'DAS_RAS_mothersample_axis_ratio_distribution', plot.PlotTitles("b/a distributions for the mothersample, DAS and RAS", "b/a", "N"), 20)  
 
 
+  exit()
 
 
   #graph11.plotScatter([InlsData], 'incl_vs_z', plot.PlotTitles("Inclination vs. redshift",  'z', 'Inclination, deg'))
@@ -281,22 +390,7 @@ def main():
   #obsSpiralsAxisRatio = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'ObservedSpirals'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'ObservedSpirals'))
   #spiralAxisRatio =  convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'Spirals'))/convert(sami_db.getFromDB('isoA_r', 'mothersample', 'Spirals'))
  
-  #plotting the observed spirals/mothersample spirals distribution, corrected for finite thickness
   
-  obsSpiralsAxisRatio = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'ObservedSpirals'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'ObservedSpirals'))
-  spiralAxisRatio =  convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'Spirals'))/convert(sami_db.getFromDB('isoA_r', 'mothersample', 'Spirals'))
-  
-  #print (spiralAxisRatio**2 - 0.13**2)
-  SpiralsCorrectedIncl = np.sqrt((abs(spiralAxisRatio**2 - 0.15**2)/(1 - 0.15**2)))
-  obsSpiralsCorrectedIncl = np.sqrt((abs(obsSpiralsAxisRatio**2 - 0.15**2)/(1 - 0.15**2)))
-  #fakeInclsData = plot.GraphData((createFakeInclinations()), 'grey', 'random distribution of disks with q = 0.15')
-  #print obsSpiralsCorrectedIncl, SpiralsCorrectedIncl
-  
-  graph2 = plot.Plots()
-  
-  obsSpiralsCorrectedInclData = plot.GraphData((obsSpiralsCorrectedIncl), 'r', 'Observed sample')
-  SpiralsCorrectedInclData = plot.GraphData((SpiralsCorrectedIncl), 'k', 'Mother sample')
-  graph2.plotHist([obsSpiralsCorrectedInclData, SpiralsCorrectedInclData], 'CorrectedInclDistribution', plot.PlotTitles("Inclination distribution, corrected for thickness", "b/a", "Normalised number"), 10)    
   #plotting the distribution of inclination vs. M:
   
   observedSpiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'observed'))/convert(sami_db.getFromDB('isoA_r', 'mothersample', 'observed'))
@@ -325,15 +419,7 @@ def main():
   
   #plotting the distribution of inclination vs. colour:
   
-  observedSpiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'observed'))/convert(sami_db.getFromDB('isoA_r', 'mothersample', 'observed'))
-  spiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'mothersample'))/convert(sami_db.getFromDB('isoA_r', 'mothersample', 'mothersample'))
 
-  graph5 = plot.Plots()
-  obsIsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'observed'))
-  spiralIsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'mothersample'))
-  obsMagData = plot.GraphData((obsIsoA_r, observedSpiralsIncl), 'r', 'Observed galaxies')
-  spiralMagData = plot.GraphData((spiralIsoA_r, spiralsIncl), 'k', 'Mothersample')
-  graph5.plotScatter([spiralMagData, obsMagData], 'incl_vs_size', plot.PlotTitles("Axis ratio vs. isophotal major axis", 'isoA_r, arcsec', 'Axis ratio'), (40, 80, 0, 1))
   
   #plotting the distribution of major axis vs. m_r:
   graph9 = plot.Plots()

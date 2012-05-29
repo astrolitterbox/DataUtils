@@ -80,19 +80,20 @@ class Plots:
     def plotScatter(self, graphDataList, filename, plotTitles, *args):
       s = plt.figure()
       ax = s.add_subplot(111)
-      try:
-        args[0]
-      except IndexError:
-          print 'no axis constraints'
-      else:  
-          v = list(args[0])
-          ax.axis(v)
+
       prop = matplotlib.font_manager.FontProperties(size=8)
       legendList = []
       for gd in graphDataList:
 	  legendList.append(gd.legends)
-          p1 = ax.plot(gd.data[0], gd.data[1], '.', markersize=15, color=gd.colour, mec=gd.colour, alpha = 0.9) 
-      
+          p1 = ax.plot(gd.data[0], gd.data[1], '.', markersize=10, color=gd.colour, mec=gd.colour, alpha = 0.7) 
+      try:
+        args[0]
+      except IndexError:
+          print 'no axis constraints'
+      else:
+          print 'axis limits', args[0]  
+          v = list(args[0])
+          ax.axis(v)
       plt.legend(legendList,  loc=0, markerscale=1, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
 	  
       plt.title(plotTitles.title)
