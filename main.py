@@ -157,11 +157,11 @@ def main():
   ba = isoB_r/isoA_r
   
   graph = plot.Plots()
-  SBData = plot.GraphData((ba, sb), 'b', 'bar', False, 'r band surface brightness')  
+  SBData = plot.GraphData((ba, sb), 'b', 'bar', False, 20, 'r band surface brightness')  
   
   graph.plotScatter([SBData], 'SB_vs_ba', plot.PlotTitles("Surface brightness vs. b/a",  'Isophotal b/a', 'r band surface brightness, mag/arcsec^2'), (0, 1, 17, 23))
   
-
+  
   petro_r = convert(db.dbUtils.getFromDB('petroMag_r', 'CALIFA.sqlite', 'mothersample'))
   Incl = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample')) 
   IsoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample')) 
@@ -175,38 +175,46 @@ def main():
   
   Mean = np.mean(Incl)
   print Mean
-  faceOn = np.where(Incl > Mean)
+  faceOn = np.where(Incl > 0.7)
   midincl = np.where((Incl > 0.3) & (Incl < 0.7))
-  edgeOn = np.where((Incl < Mean))
+  edgeOn = np.where((Incl < 0.3))
   
   nMean = np.mean(nadineIncl)
-  print round(nMean, 2)
-  NfaceOn = np.where(nadineIncl > nMean)
+  #print round(nMean, 2)
+  NfaceOn = np.where(nadineIncl > 0.7)
   Nmidincl = np.where((nadineIncl > 0.3) & (nadineIncl < 0.7))
-  NedgeOn = np.where((nadineIncl < nMean))
+  NedgeOn = np.where((nadineIncl < 0.3))
   
   faceOnGR = IsoA_r[faceOn]
   midInclsGR = IsoA_r[midincl]
   edgeOnInclsGR = IsoA_r[edgeOn]
   
   faceOnR90 = R90[NfaceOn]
-  #midInclsR90 = R90[midincl]
+  midInclsR90 = R90[Nmidincl]
   edgeOnInclsR90 = R90[NedgeOn]
   
   
-  print faceOnGR.shape, midInclsGR.shape, edgeOnInclsGR.shape
-  print faceOnR90.shape, edgeOnInclsR90.shape
+  print 'sdss:', faceOnGR.shape, midInclsGR.shape, edgeOnInclsGR.shape
+  print 'nadine:', faceOnR90.shape, midInclsR90.shape, edgeOnInclsR90.shape
   #FullGRData = plot.GraphData((IsoA_r), 'grey', 'step', False, 'total distribution')
-  faceOnGRData = plot.GraphData((faceOnGR), 'b', 'bar', False, 'b/a > '+str(round(Mean, 2)))
-  faceOnR90Data = plot.GraphData((faceOnR90), RASColour, 'bar', False, 'b/a > '+str(round(nMean, 2)))
-  #midInclsGRData = plot.GraphData((midInclsGR), 'k', 'bar', False, '0.3 < b/a < 0.5')
-  edgeOnData = plot.GraphData((edgeOnInclsGR), 'r', 'bar', False,'b/a < '+str(round(Mean, 2)))
-  edgeOnR90Data = plot.GraphData((edgeOnInclsR90), DRASColour, 'bar', False,'b/a < '+str(round(nMean, 2)))
+  faceOnGRData = plot.GraphData((faceOnGR), 'b', 'bar', False, 50, 'b/a > 0.7')
+  midInclsGRData = plot.GraphData((midInclsGR), 'k', 'bar', False, 20, '0.3 < b/a < 0.7')
+  edgeOnData = plot.GraphData((edgeOnInclsGR), 'r', 'bar', False, 20, 'b/a < 0.3')
+  
+  
+  dataWidth =  max(faceOnR90) - min(faceOnR90)
+  
+  faceOnR90Data = plot.GraphData((faceOnR90), RASColour, 'bar', False, 15, 'b/a > 0.7')
+  nmidInclsGRData = plot.GraphData((midInclsR90), 'k', 'bar', False, 60, '0.3 < b/a < 0.7')
+  edgeOnR90Data = plot.GraphData((edgeOnInclsR90), DRASColour, 'bar', False, 15, 'b/a < 0.3')
+  
+  
+  
   #zdata = plot.GraphData((z), 'grey', 'step', False, 'Total number')
-  sizeMeasures = plot.GraphData((IsoA_r[0:937], R90), 'grey', 'step', False, 'size measures')
-  baMeasures = plot.GraphData((Incl[0:937], nadineIncl), 'grey', 'step', False, 'b/a measures')
-  bins = graph.plotHist([edgeOnR90Data, faceOnR90Data], 'axisRatioHist_Nadines', plot.PlotTitles("R90 from growth curve photometry",  'R90, arcsec', 'n'), 20, (0, 100, 0, 160))
-  bins = graph.plotHist([faceOnGRData, edgeOnData], 'axisRatioHist', plot.PlotTitles("isoA_r",  'isoA_r, arcsec', 'n'), 20, (40, 80, 0, 120))
+  sizeMeasures = plot.GraphData((IsoA_r[0:937], R90), 'grey', 'step', False,20, 'size measures')
+  baMeasures = plot.GraphData((Incl[0:937], nadineIncl), 'grey', 'step', False, 20, 'b/a measures')
+  bins = graph.plotHist([nmidInclsGRData,edgeOnR90Data, faceOnR90Data], 'axisRatioHist_Nadines', plot.PlotTitles("R90 from growth curve photometry",  'R90, arcsec', 'n'), (10, 90, 0, 100))
+  bins = graph.plotHist([midInclsGRData, edgeOnData, faceOnGRData], 'axisRatioHist', plot.PlotTitles("isoA_r",  'isoA_r, arcsec', 'n'), (40, 80, 0, 80))
   bins = graph.plotScatter([sizeMeasures], 'SizeMeasures', plot.PlotTitles("IsoA_r",  'IsoA_r, arcsec', 'R90, arcsec'), (40, 80, 10, 80))
   bins = graph.plotScatter([baMeasures], 'BAMeasures', plot.PlotTitles("b/a measures",  'growth curve photometry b/a', 'b/a from SDSS'))
   #faceOnGR = z[faceOn]
