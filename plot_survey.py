@@ -59,6 +59,7 @@ class Plots:
       except IndexError:
           print 'no axis constraints'
       else:  
+          print args[0]
           v = list(args[0])
           ax.axis(v)
 #      if barstacked == True:
@@ -84,13 +85,11 @@ class Plots:
 
       prop = matplotlib.font_manager.FontProperties(size=8)
       legendList = []
-      i = 0
+    
       for gd in graphDataList:
 	  legendList.append(gd.legends)
-          p1 = ax.plot(gd.data[0], gd.data[1], '.', markersize=15, color=gd.colour, mec=gd.colour, alpha = 0.9) 
-	  plt.legend(legendList[i], loc=0, markerscale=1, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
-	
-	  i = i+1
+          p1 = ax.plot(gd.data[0], gd.data[1], '.', markersize=10, color=gd.colour, mec=gd.colour, alpha = 0.9) 
+	  #plt.legend(legendList[i], loc=0, markerscale=1, fancybox=True, labelspacing = 0.2, prop=prop, shadow=True)
       try:
         args[0]
       except IndexError:
@@ -99,8 +98,8 @@ class Plots:
           print 'axis limits', args[0]  
           v = list(args[0])
           ax.axis(v)
-      
-	  
+      plt.legend(legendList, loc=0, markerscale=1, fancybox=False, labelspacing = 0.2, prop=prop, shadow=True)
+          
       plt.title(plotTitles.title)
       plt.xlabel(plotTitles.xlabel)
       plt.ylabel(plotTitles.ylabel)

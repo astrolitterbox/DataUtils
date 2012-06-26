@@ -82,8 +82,8 @@ class dbUtils:
 	def getFromDB(columns, table, view, *whereClause): 
 	  conn = sqlite3.connect(table)
 	  c = conn.cursor()
-	  print 'select ' + columns + ' from ' + view + ''.join(whereClause) 
-	  c.execute('select ' + columns + ' from ' + view + ''.join(whereClause))
+	  print 'select ' + columns + ' from ' + view + ''.join(whereClause) +' order by rowid asc'
+	  c.execute('select ' + columns + ' from ' + view + ''.join(whereClause)+' order by rowid asc')
 	  conn.commit()
 	  return c.fetchall()
 	'''
