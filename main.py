@@ -10,7 +10,7 @@ from scipy.stats import ks_2samp as ks_2samp
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
 import pyfits as pyfits
-from ellipse import ellipse
+
 #import sami_db
 import db as db
 import plot_survey as plot
@@ -166,13 +166,70 @@ def main():
   ic = convert(db.dbUtils.getFromDB('pa_align', 'CALIFA.sqlite', 'nadine', ' where CALIFA_ID = 544'))
   print ic+180
   
+  
+  
   pa = convert(db.dbUtils.getFromDB('pa_align', 'CALIFA.sqlite', 'nadine'))
-  pa_sdss = convert(db.dbUtils.getFromDB('isoPhi_r', 'CALIFA.sqlite', 'mothersample'))
+  pa_sdss = convert(db.dbUtils.getFromDB('isoPhi_r', 'CALIFA.sqlite', 'mothersample'))[0:937]
   pa[np.where(pa < 0)] = pa[np.where(pa < 0)] + 180
-  graph11 = plot.Plots()
-  PA_Data = plot.GraphData((pa_sdss[0:937], pa), 'k', 'step', False, 20, 'position angle')
-  bins = graph11.plotScatter([PA_Data], 'pa_growth_vs_sdss', plot.PlotTitles("Comparison between the SDSS and growth curve PA values",  'PA, SDSS, deg', 'PA, by Nadine, deg'))
+  Incl = (convert(db.dbUtils.getFromDB('isoB_r',  'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r',  'CALIFA.sqlite', 'mothersample')))[0:937] 
+  Incl_Nadine = convert(db.dbUtils.getFromDB('ba',  'CALIFA.sqlite', 'nadine')) 
 
+  #b/a for SDSS
+  faceOn = np.where(Incl > 0.7)
+  midincl = np.where((Incl > 0.3) & (Incl < 0.7))
+  edgeOn = np.where((Incl < 0.3))
+  
+  
+  #data for SDSS
+  
+  faceonData = pa[faceOn]
+  midinclData = pa[midincl]
+  edgeOnData = pa[edgeOn]
+  
+  
+  
+  #faceonsdss = pa_sdss[faceOn]
+  #midinclsdss = pa_sdss[midincl]
+  #edgeOnsdss = pa_sdss[edgeOn]
+
+  graph11 = plot.Plots()
+  #FO_Data = plot.GraphData((faceonsdss, faceonData), 'b', 'step', False, 20, 'b/a > 0.7')
+  #MI_Data = plot.GraphData((midinclsdss, midinclData), 'k', 'step', False, 20, '0.7 > b/a >0.3')
+  #EO_Data = plot.GraphData((edgeOnsdss, edgeOnData), 'r', 'step', False, 20, 'b/a < 0.3')
+  
+  plot_Data = plot.GraphData((Incl, pa-pa_sdss), 'k', 'step', False, 20, 'PA_gc - PA_sdss')
+  
+  bins = graph11.plotScatter([plot_Data], 'pa_diff_vs_sdss_ba', plot.PlotTitles("PA difference vs. axis ratio",  'Axis ratio, SDSS isophotal', 'Difference between PA values, deg'))
+  
+  #for Nadines ba:
+  
+  plot_Data = plot.GraphData((Incl_Nadine, pa-pa_sdss), 'k', 'step', False, 20, 'PA_gc - PA_sdss')
+  
+  bins = graph11.plotScatter([plot_Data], 'pa_diff_vs_growth_curve_ba', plot.PlotTitles("PA difference vs. axis ratio",  'Axis ratio, GC analysis', 'Difference between PA values, deg'), (0, 1, -200, 200))
+  
+  
+  
+  exit()
+  #b/a for Nadine
+  faceOn = np.where(Incl_Nadine > 0.7)
+  midincl = np.where((Incl_Nadine > 0.3) & (Incl_Nadine < 0.7))
+  edgeOn = np.where((Incl_Nadine < 0.3))
+  
+  faceonData = pa[faceOn]
+  midinclData = pa[midincl]
+  edgeOnData = pa[edgeOn]
+  
+  faceonsdss = pa_sdss[faceOn]
+  midinclsdss = pa_sdss[midincl]
+  edgeOnsdss = pa_sdss[edgeOn]
+
+  graph11 = plot.Plots()
+  FO_Data = plot.GraphData((faceonsdss, faceonData), 'b', 'step', False, 20, 'b/a > 0.7')
+  MI_Data = plot.GraphData((midinclsdss, midinclData), 'k', 'step', False, 20, '0.7 > b/a >0.3')
+  EO_Data = plot.GraphData((edgeOnsdss, edgeOnData), 'r', 'step', False, 20, 'b/a < 0.3')
+  
+
+  bins = graph11.plotScatter([FO_Data, MI_Data, EO_Data], 'pa_growth_vs_sdss_nadine_ba', plot.PlotTitles("Comparison between the SDSS and growth curve PA values",  'PA, SDSS, deg', 'PA, by Nadine, deg'))
   exit()
   #data output for CMD
   absmag = convert(db.dbUtils.getFromDB('absmag', 'mothersample', 'mothersample'))
