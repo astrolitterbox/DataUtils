@@ -20,6 +20,7 @@ import matplotlib.font_manager
 import csv
 import readAtlas
 import collections
+from math import sqrt
 
 c = 299792.458 
 pi = 3.14159265
@@ -47,7 +48,7 @@ RDASColour = '#EE0000'
 DASColour = '#99FF33'
 DRASColour = '#006633'
 CALIFAColour = '#1B3F8B'
-
+AIPBlue = '#00417A'
 
 #utilities
 def E_z(z): #time derivative of log(a(t)), used for integration
@@ -65,12 +66,13 @@ def getAbsMag(z, mag, ext):
 	d = comovingDistance(z)
         dm = ztodm(z, (0.3, 0.7, 0.7))
 	absmag = mag - dm #- 3.1 * ext
-	print dm, 'dm', absmag, 'absmag'
+	#print dm, 'dm', absmag, 'absmag'
 	return absmag
 	
 def convert(data):
      tempDATA = []
      for i in data:
+     	 #print i
          tempDATA.append([float(j) for j in i])
      return np.asarray(tempDATA)
 
@@ -161,19 +163,244 @@ def list_to_int(l):
 
 def main():
   #comparison of Nadine's and SDSS PA, _pixel_coordinates!
-  ic = convert(db.dbUtils.getFromDB('isoPhi_r', 'CALIFA.sqlite', 'mothersample', ' where CALIFA_ID = 544'))
-  print ic
-  ic = convert(db.dbUtils.getFromDB('pa_align', 'CALIFA.sqlite', 'nadine', ' where CALIFA_ID = 544'))
-  print ic+180
+  #ic = convert(db.dbUtils.getFromDB('isoPhi_r', 'CALIFA.sqlite', 'mothersample', ' where CALIFA_ID = 544'))
+  #print ic
+  #ic = convert(db.dbUtils.getFromDB('pa_align', 'CALIFA.sqlite', 'nadine', ' where CALIFA_ID = 544'))
+  #print ic+180
+  #plotting axis ratio distribution for MS, DAS and RAS
+
+  #different diameter change corrections, from Patureli et al.
+  '''
+  D = 10
+  q = 0.2
+  incl = np.arange(0, 90)
+  axisRatio = np.sqrt(np.cos(np.radians(incl))**2 * (1 - q**2)+q**2)
+  C = 0.01
+  Dincl_1 = 10**(math.log10(D) + C*np.log10(1/axisRatio))
+  Dincl_1 = ((Dincl_1 - D)/(0.01 * D)) #percentage change
+  C = 0.05
+  Dincl_2 = 10**(math.log10(D) + C*np.log10(1/axisRatio))
+  Dincl_2 = ((Dincl_2 - D)/(0.01 * D)) #percentage change
+  C = 0.1
+  Dincl_3 = 10**(math.log10(D) + C*np.log10(1/axisRatio))
+  Dincl_3 = ((Dincl_3 - D)/(0.01 * D)) #percentage change
+  graph11 = plot.Plots()
+  
+  Data1 = plot.GraphData((incl, Dincl_1), AIPBlue, 'step', False, 20, ",", 'C = 0.01')
+  Data2 = plot.GraphData((incl, Dincl_2), 'grey', 'step', False, 20, "x", 'C = 0.1')
+  Data3 = plot.GraphData((incl, Dincl_3), 'r', 'step', False, 20, ".", 'C = 0.2')
+
+  bins = graph11.plotScatter([Data1, Data2, Data3], 'incl_corr.pdf', plot.PlotTitles('Projected isophotal diameter change with inclination',  'Inclination, deg', 'Projected $D_{iso}$ change, $\%$', 5, 2, 10, 5))
+  '''
+
+ #angular diameter isoA_r vs. app.mag. distribution
+  isoA_r = convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
+  z = convert(db.dbUtils.getFromDB('z',  'CALIFA.sqlite', 'mothersample'))
+  r = convert(db.dbUtils.getFromDB('petroMag_r', 'CALIFA.sqlite', 'mothersample'))
+  
+  Incl = convert(db.dbUtils.getFromDB('isoB_r',  'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r',  'CALIFA.sqlite', 'mothersample'))
+  faceOn = np.where(Incl > 0.7)
+  midincl = np.where((Incl > 0.3) & (Incl < 0.7))
+  edgeOn = np.where((Incl < 0.3))
+  
+  
+  #data for SDSS
+  
+  absmag_fo = r[faceOn]
+  absmag_mi = r[midincl]
+  absmag_eo = r[edgeOn]
+  
+  size_fo = isoA_r[faceOn]
+  size_mi = isoA_r[midincl]
+  size_eo = isoA_r[edgeOn]
+ 
+  graph11 = plot.Plots()
+  fo_Data = plot.GraphData((absmag_fo, size_fo), AIPBlue, 'step', False, 20, ",",  'b/a $>$ 0.7')
+  mi_Data = plot.GraphData((absmag_mi, size_mi), 'grey', 'step', False, 20, "x", '0.7 $>$ b/a $>$ 0.3')
+  eo_Data = plot.GraphData((absmag_eo, size_eo), 'r', 'step', False, 20, ".", 'b/a $<$ 0.3')
+  bins = graph11.plotScatter([mi_Data, fo_Data, eo_Data], 'app_mag_isoA', plot.PlotTitles('Angular size vs. apparent r band magnitude',  'SDSS Petrosian r magnitude, mag', 'Angular isophotal radius, arcsec', 20, 5, 2, 0.5), (11, 16, 42, 80))
+
+
+
+
+  
+  #physical size from isoA_r vs. absmag distribution
+  isoA_r = convert(db.dbUtils.getFromDB('isoA', 'CALIFA.sqlite', 'lucie_ellipse'))
+  print isoA_r.shape
+  z = convert(db.dbUtils.getFromDB('z',  'CALIFA.sqlite', 'mothersample'))[0:937]
+  #r = convert(db.dbUtils.getFromDB('petroMag_r', 'CALIFA.sqlite', 'mothersample'))
+  r = convert(db.dbUtils.getFromDB('el_mag', 'CALIFA.sqlite', 'gc'))[0:937]
+  print r.shape
+
+  size = np.empty((len(z), 1))
+  for i in range(0, len(z)):
+  	  size[i] = angular2physical(isoA_r[i], z[i])
+  
+  
+  absmag = np.empty((len(z), 1))
+  for i in range(0, len(z)):
+
+  	  absmag[i] = getAbsMag(z[i], r[i], 0)
+  Incl = convert(db.dbUtils.getFromDB('ba',  'CALIFA.sqlite', 'nadine'))[0:937]
+  faceOn = np.where(Incl > 0.7)
+  midincl = np.where((Incl > 0.3) & (Incl < 0.7))
+  edgeOn = np.where((Incl < 0.3))
+  
+  
+  #data for SDSS
+  
+  absmag_fo = absmag[faceOn]
+  absmag_mi = absmag[midincl]
+  absmag_eo = absmag[edgeOn]
+  
+  size_fo = size[faceOn]
+  size_mi = size[midincl]
+  size_eo = size[edgeOn]
+ 
+  graph11 = plot.Plots()
+  fo_Data = plot.GraphData((absmag_fo, size_fo), AIPBlue, 'step', False, 20, ",",  'b/a $>$ 0.7')
+  mi_Data = plot.GraphData((absmag_mi, size_mi), 'grey', 'step', False, 20, "x", '0.7 $>$ b/a $>$ 0.3')
+  eo_Data = plot.GraphData((absmag_eo, size_eo), 'r', 'step', False, 20, ".", 'b/a $<$ 0.3')
+  bins = graph11.plotScatter([mi_Data, fo_Data, eo_Data], 'sl_rel_gc_vs_lucie', plot.PlotTitles('Size vs. absolute magnitude',  'Growth curve Mr, mag', 'Linear isophotal size from ellipse fit, kpc', 20, 5, 2, 0.5), (-16, -24, 5, 80))
+  exit()
+  #SDSS and Lucie's b/a comparison
+  from matplotlib  import cm
+  dbDir = ""
+  graph = plot.Plots()
+  isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))[0:937]/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))[0:937]
+
+  lucie_ba = convert(db.dbUtils.getFromDB('ba', dbDir+'CALIFA.sqlite', 'lucie'))  #parsing tuples 
+  fig = plt.figure()
+  ax = fig.add_subplot(111)
+
+  ax.set_title("Lucie isophotal $b/a$ vs. SDSS b/a ",fontsize=14)
+  ax.set_xlabel("SDSS b/a",fontsize=12)
+  ax.set_ylabel("Isophotal b/a",fontsize=12)
+  sc = ax.scatter(isoA_r_axis_ratio,lucie_ba,s=6,c='black', marker = 'o', edgecolor='None')
+  ax.axis([0, 1, 0, 1])
+  #cb = fig.colorbar(sc)
+  #cb.set_label('b/a')
+  plt.savefig('incl_img/b_a_comparison')
+  #plotData = plot.GraphData(((sdss_hlr, lucie_hlr)), Incl, 'step', False, 20, ".", 'SDSS $r_{50}$ vs. Lucie isophotal $r_e$')    
+  #graph.plotScatter([plotData], "circ_hlr_vs_sdss", plot.PlotTitles("Comparison between Lucie's and SDSS HLR values", "SDSS Petrosian R50, arcsec", "Lucies isophotal $r_e$, arcsec", 20, 5, 20, 5), (0, 50, 0, 45))
   
   
   
+  
+  #SDSS and Lucie's comparison
+  from matplotlib  import cm
+  dbDir = ""
+  graph = plot.Plots()
+  sdss_hlr = convert(db.dbUtils.getFromDB('petroR50_r', dbDir+'CALIFA.sqlite', 'mothersample'))[0:937]
+  Incl = (convert(db.dbUtils.getFromDB('isoB_r',  'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r',  'CALIFA.sqlite', 'mothersample')))[0:937]
+  lucie_hlr = convert(db.dbUtils.getFromDB('re', dbDir+'CALIFA.sqlite', 'lucie'))  #parsing tuples 
+  fig = plt.figure()
+  ax = fig.add_subplot(111)
+
+  ax.set_title("Lucie isophotal $r_e$ vs. SDSS $PetroR_{50}$ ",fontsize=14)
+  ax.set_xlabel("SDSS Petrosian half-light radius, arcsec",fontsize=12)
+  ax.set_ylabel("Isophotal half-light radius, arcsec",fontsize=12)
+  sc = ax.scatter(sdss_hlr,lucie_hlr,s=6,c=Incl, marker = 'o', edgecolor='None', cmap = cm.jet)
+  ax.axis([0, 50, 0, 50])
+  cb = fig.colorbar(sc)
+  cb.set_label('b/a')
+  plt.savefig('incl_img/lucie_vs_sdss')
+  #plotData = plot.GraphData(((sdss_hlr, lucie_hlr)), Incl, 'step', False, 20, ".", 'SDSS $r_{50}$ vs. Lucie isophotal $r_e$')    
+  #graph.plotScatter([plotData], "circ_hlr_vs_sdss", plot.PlotTitles("Comparison between Lucie's and SDSS HLR values", "SDSS Petrosian R50, arcsec", "Lucies isophotal $r_e$, arcsec", 20, 5, 20, 5), (0, 50, 0, 45))
+
+  #axis ratio distribution
+  isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
+  spiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'Spirals'))/convert(db.dbUtils.getFromDB('isoA_r', 'mothersample', 'Spirals'))
+
+  graph = plot.Plots()
+  hist, bins = np.histogram(spiralsIncl, bins = 10)
+
+  width=1*(bins[1]-bins[0])
+  #center=(bins[:-1]+bins[1:])/2
+
+  isoA_r_AxisRatioData = plot.GraphData((isoA_r_axis_ratio), 'none', 'bar', False, 1/width, "o",  'Full CALIFA sample')  
+  spiralsIncl = plot.GraphData((spiralsIncl), 'red', 'stepfilled', False, 1/width, "//",  'Spirals')
+  graph.plotHist([spiralsIncl, isoA_r_AxisRatioData], 'ba_dist.pdf', plot.PlotTitles("b/a distribution of the whole MS and of the spiral galaxies", "b/a", "N",  20, 10, 0.2, 0.1)) 
+  
+  #ancestor and CALIFA MS r mag vs. b/a:
+  r_DAS = convert(db.dbUtils.getFromDB('petroMag_r', 'ancestor_samples.sqlite', 'DAS', ' where petroR90_r/petroR50_r < 2.5'))
+  r_RAS = convert(db.dbUtils.getFromDB('petroMag_r', 'ancestor_samples.sqlite', 'RAS', ' where isoA_r > 20 and petroR90_r/petroR50_r < 2.5'))
+  r = convert(db.dbUtils.getFromDB('petroMag_r', 'CALIFA.sqlite', 'mothersample'))
+  isoA_r_DAS = convert(db.dbUtils.getFromDB('isoB_r', 'ancestor_samples.sqlite', 'DAS', ' where petroR90_r/petroR50_r < 2.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'ancestor_samples.sqlite', 'DAS', ' where petroR90_r/petroR50_r < 2.5'))
+  isoA_r_RAS = convert(db.dbUtils.getFromDB('isoB_r', 'ancestor_samples.sqlite', 'RAS', ' where isoA_r > 20 and petroR90_r/petroR50_r < 2.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'ancestor_samples.sqlite', 'RAS', ' where isoA_r > 20 and petroR90_r/petroR50_r < 2.5'))
+
+  isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
+  
+  graph = plot.Plots()
+  hist, bins = np.histogram(isoA_r_axis_ratio, bins = 10)
+
+  width=1*(bins[1]-bins[0])
+  #center=(bins[:-1]+bins[1:])/2
+
+  isoA_r_AxisRatioData = plot.GraphData((isoA_r_axis_ratio, r), 'k', 'bar', True, 1/width, "o",  'Petrosian r, CALIFA sample')  
+  DAS_AxisRatioData = plot.GraphData((isoA_r_DAS, r_DAS), 'grey', 'stepfilled', True, 1/width, "", 'Petrosian r, diameter-selected')  
+  RAS_AxisRatioData = plot.GraphData((isoA_r_RAS, r_RAS), 'red', 'stepfilled', True, 1/width, "//", 'Petrosian r, redshift-selected')
+
+  graph.plotScatter([RAS_AxisRatioData, DAS_AxisRatioData, isoA_r_AxisRatioData], '3_samples_mag_vs_ba', plot.PlotTitles("r band magnitude vs. b/afor the mothersample, DAS and RAS", "b/a", "r band SDSS magnitude", 1, 0.5, 0.2, 0.1))  
+  
+  
+  
+  
+  exit()
+  #3 samples
+  isoA_r_DAS = convert(db.dbUtils.getFromDB('isoB_r', 'DAS', 'DAS', ' where petroR90_r/petroR50_r < 2.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'DAS', 'DAS', ' where petroR90_r/petroR50_r < 2.5'))
+  isoA_r_RAS = convert(db.dbUtils.getFromDB('isoB_r', 'RAS', 'RAS2', ' where isoA_r > 20 and petroR90_r/petroR50_r < 2.5'))/convert(db.dbUtils.getFromDB('isoA_r', 'RAS', 'RAS2', ' where isoA_r > 20 and petroR90_r/petroR50_r < 2.5'))
+  print isoA_r_RAS.shape 
+  isoA_r_axis_ratio = convert(db.dbUtils.getFromDB('isoB_r', 'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r', 'CALIFA.sqlite', 'mothersample'))
+  
+  graph = plot.Plots()
+  hist, bins = np.histogram(isoA_r_axis_ratio, bins = 10)
+
+  width=1*(bins[1]-bins[0])
+  #center=(bins[:-1]+bins[1:])/2
+
+  isoA_r_AxisRatioData = plot.GraphData((isoA_r_axis_ratio), 'white', 'bar', True, 1/width, "o",  'b/a, CALIFA sample')  
+  DAS_AxisRatioData = plot.GraphData((isoA_r_DAS), 'grey', 'stepfilled', True, 1/width, "", 'b/a, diameter-selected')  
+  RAS_AxisRatioData = plot.GraphData((isoA_r_RAS), 'red', 'stepfilled', True, 1/width, "//", 'b/a, redshift-selected')
+
+  graph.plotHist([RAS_AxisRatioData, DAS_AxisRatioData, isoA_r_AxisRatioData], '3_samples.pdf', plot.PlotTitles("b/a distributions for the mothersample, DAS and RAS", "b/a", "N, normalised number", 0.5, 0.1, 0.2, 0.1))  
+  
+    
+ 
+  
+  '''
+  stMass = convert(db.dbUtils.getFromDB('StMass', 'CALIFA.sqlite', 'mothersample'))
+  graph11 = plot.Plots()
+  plot_Data = plot.GraphData((stMass), 'k', 'step', False, 20, 'Galaktikų žvaigždžių masė')
+  bins = graph11.plotLogHist([plot_Data], 'st_masses', plot.PlotTitles("Galaktikų žvaigždžių masių pasiskirstymas",  'M, M_sol', ''))
+  exit()
+  err = convert(db.dbUtils.getFromDB('PA_err', 'CALIFA.sqlite', 'nadine')) 
+  goodPoints = np.where(err < 20)
+  print err, err.shape, 'err'
   pa = convert(db.dbUtils.getFromDB('pa_align', 'CALIFA.sqlite', 'nadine'))
   pa_sdss = convert(db.dbUtils.getFromDB('isoPhi_r', 'CALIFA.sqlite', 'mothersample'))[0:937]
   pa[np.where(pa < 0)] = pa[np.where(pa < 0)] + 180
-  Incl = (convert(db.dbUtils.getFromDB('isoB_r',  'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r',  'CALIFA.sqlite', 'mothersample')))[0:937] 
-  Incl_Nadine = convert(db.dbUtils.getFromDB('ba',  'CALIFA.sqlite', 'nadine')) 
-
+  
+  print pa.shape, pa_sdss.shape, 'length of pa vectors'
+  
+  Incl = (convert(db.dbUtils.getFromDB('isoB_r',  'CALIFA.sqlite', 'mothersample'))/convert(db.dbUtils.getFromDB('isoA_r',  'CALIFA.sqlite', 'mothersample')))[0:937]
+  print Incl.shape
+  Incl_Nadine = convert(db.dbUtils.getFromDB('ba',  'CALIFA.sqlite', 'nadine'))
+ 
+  graph11 = plot.Plots()
+  plot_Data = plot.GraphData((Incl, pa-pa_sdss), 'k', 'step', False, 20, 'PA_gc - PA_sdss')
+  
+  bins = graph11.plotScatter([plot_Data], 'pa_diff_vs_sdss_ba_all', plot.PlotTitles("PA difference vs. axis ratio",  'Axis ratio, SDSS isophotal', 'Difference between PA values, deg'))
+  
+  
+  plot_Data = plot.GraphData((Incl_Nadine, pa-pa_sdss), 'k', 'step', False, 20, 'PA_gc - PA_sdss')
+  bins = graph11.plotScatter([plot_Data], 'pa_diff_vs_growth_curve_ba_all', plot.PlotTitles("PA difference vs. axis ratio",  'Axis ratio, GC analysis', 'Difference between PA values, deg'), (0, 1, -200, 200))
+  print Incl.shape, 'incl_shape'
+  pa_sdss = pa_sdss[goodPoints]
+  pa = pa[goodPoints]
+  Incl = Incl[goodPoints]
+  Incl_Nadine = Incl_Nadine[goodPoints]
+  print Incl_Nadine.shape, 'Nincl_shape'
   #b/a for SDSS
   faceOn = np.where(Incl > 0.7)
   midincl = np.where((Incl > 0.3) & (Incl < 0.7))
@@ -188,20 +415,23 @@ def main():
   
   
   
-  #faceonsdss = pa_sdss[faceOn]
-  #midinclsdss = pa_sdss[midincl]
-  #edgeOnsdss = pa_sdss[edgeOn]
+  faceonsdss = pa_sdss[faceOn]
+  midinclsdss = pa_sdss[midincl]
+  edgeOnsdss = pa_sdss[edgeOn]
 
   graph11 = plot.Plots()
-  #FO_Data = plot.GraphData((faceonsdss, faceonData), 'b', 'step', False, 20, 'b/a > 0.7')
-  #MI_Data = plot.GraphData((midinclsdss, midinclData), 'k', 'step', False, 20, '0.7 > b/a >0.3')
-  #EO_Data = plot.GraphData((edgeOnsdss, edgeOnData), 'r', 'step', False, 20, 'b/a < 0.3')
+  FO_Data = plot.GraphData((faceonsdss, faceonData), 'b', 'step', False, 20, 'b/a > 0.7')
+  MI_Data = plot.GraphData((midinclsdss, midinclData), 'k', 'step', False, 20, '0.7 > b/a >0.3')
+  EO_Data = plot.GraphData((edgeOnsdss, edgeOnData), 'r', 'step', False, 20, 'b/a < 0.3')
   
   plot_Data = plot.GraphData((Incl, pa-pa_sdss), 'k', 'step', False, 20, 'PA_gc - PA_sdss')
   
   bins = graph11.plotScatter([plot_Data], 'pa_diff_vs_sdss_ba', plot.PlotTitles("PA difference vs. axis ratio",  'Axis ratio, SDSS isophotal', 'Difference between PA values, deg'))
   
+  bins = graph11.plotScatter([FO_Data, MI_Data, EO_Data], 'pa_growth_vs_sdss', plot.PlotTitles("Comparison between the SDSS and growth curve PA values",  'PA, SDSS, deg', 'PA, by Nadine, deg'))
+  
   #for Nadines ba:
+  
   
   plot_Data = plot.GraphData((Incl_Nadine, pa-pa_sdss), 'k', 'step', False, 20, 'PA_gc - PA_sdss')
   
@@ -209,7 +439,7 @@ def main():
   
   
   
-  exit()
+
   #b/a for Nadine
   faceOn = np.where(Incl_Nadine > 0.7)
   midincl = np.where((Incl_Nadine > 0.3) & (Incl_Nadine < 0.7))
@@ -970,7 +1200,7 @@ def main():
   #graph11.plotScatter([InlsData], 'incl_vs_z', plot.PlotTitles("Inclination vs. redshift",  'z', 'Inclination, deg'))
 
 
-  '''  
+
   
   sampleAxisRatio = convert(sami_db.getFromDB('isoB_r', 'mothersample', 'mothersample'))/convert(sami_db.getFromDB('isoA_r', 'mothersample', 'mothersample'))
   gmAxisRatio = convert(sami_db.getFromDB('isoB_r', 'grandmother', 'grandmotherFL'))/convert(sami_db.getFromDB('isoA_r', 'grandmother', 'grandmotherFL'))
@@ -1287,7 +1517,7 @@ def main():
   #mgr[:, 1] = gr[:, 0]
   
   #np.savetxt('gr_colour.txt', mgr)
-  '''
+
   #plotting the inclination-coded distribution of colour vs. magnitude
   graph10 = plot.Plots()
   spiralsIncl = convert(db.dbUtils.getFromDB('isoB_r', 'mothersample', 'mothersample'))/convert(sami_db.getFromDB('isoA_r', 'mothersample', 'mothersample'))
@@ -1316,7 +1546,7 @@ def main():
   edgeOnInclsGRData = plot.GraphData((edgeOnInclsGR, edgeOnMr), 'r', ('b/a < 0.3'))
   graph10.plotScatter([faceOnGRData, midInclsGRData, edgeOnInclsGRData], 'CMD_vs_incl', plot.PlotTitles("Magnitude vs. colour", 'g-r, mag', 'M_r, mag'))
 
-  '''
+  
   #createFakeInclinations()
   
  
@@ -1342,6 +1572,7 @@ def main():
 
 
   #graph11.plotScatter([InlsData], 'incl_vs_z', plot.PlotTitles("Inclination vs. redshift",  'z', 'Inclination, deg'))
+
   '''
  
 if __name__ == '__main__':
